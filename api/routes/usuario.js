@@ -55,11 +55,23 @@ router.post('/login', (req, res) => {
       return res.status(400).json({ mensaje: 'No existe el RFC registrado' });
     }
 
+    req.session.user = { rfc: rfc };
     return res.status(201).json({
       mensaje: 'Usuario logeado exitosamente',
       data: { id: results.insertId, rfc, access_control: "si"},
     });
   });
+});
+
+router.post('/getSession', async (req, res) => {
+  if (req.session.user.correo) {
+    return res.status(201).json({
+      mensaje: 'Session ok',
+      data: { ok: true },
+    });
+  } else {
+    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+  }
 });
 
 module.exports = router;

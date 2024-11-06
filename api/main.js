@@ -1,5 +1,7 @@
 // index.js
 const express = require('express');
+const session = require('express-session');
+
 const app = express();
 const port = 3000;
 
@@ -7,6 +9,15 @@ const connection = require('./resources/db');
 
 // Middleware para parsear JSON
 app.use(express.json());
+
+app.use(
+  session({
+    secret: 'RemBestGirl',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 3600000 } // 1 minuto
+  })
+);
 
 // Importa el archivo de rutas
 const userRoutes = require('./routes/usuario');
