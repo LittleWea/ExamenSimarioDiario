@@ -12,7 +12,7 @@ router.post('/obtener', (req, res) => {
     const query = "SELECT * FROM Bancos WHERE Nombre LIKE CONCAT('%', ?, '%')"
     connection.query(query, [Buscar], (err, results) => {
       if (err) {
-        return res.status(500).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
+        return res.status(201).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
       }
 
       res.status(201).json({
@@ -21,7 +21,7 @@ router.post('/obtener', (req, res) => {
       });
     });
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
@@ -34,7 +34,7 @@ router.post('/obtenerPorId', (req, res) => {
     const query = "SELECT * FROM Bancos WHERE ID = ?";
     connection.query(query, [ID], (err, results) => {
       if (err) {
-        return res.status(500).json({ mensaje: 'Error al crear el usuario', error: err });
+        return res.status(201).json({ mensaje: 'Error al crear el usuario', error: err });
       }
 
       res.status(201).json({
@@ -43,7 +43,7 @@ router.post('/obtenerPorId', (req, res) => {
       });
     });
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
@@ -54,7 +54,7 @@ router.post('/getSession', async (req, res) => {
       data: { ok: true },
     });
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
