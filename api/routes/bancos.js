@@ -8,36 +8,54 @@ router.post('/obtener', (req, res) => {
   // Obtener los datos del cuerpo de la solicitud
   const { Buscar } = req.body;
 
-  const query = "SELECT * FROM Bancos WHERE Nombre LIKE CONCAT('%', ?, '%')"
+  if (req.session.user) {
+    const query = "SELECT * FROM Bancos WHERE Nombre LIKE CONCAT('%', ?, '%')"
     connection.query(query, [Buscar], (err, results) => {
       if (err) {
-        return res.status(500).json({ mensaje: 'Error al crear el usuario', error: err });
+        return res.status(500).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
       }
-      
+
       res.status(201).json({
         mensaje: 'Usuario creado exitosamente',
         data: results
       });
     });
+  } else {
+    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+  }
 });
 
 // Ruta para crear un usuario
-router.get('/obtenerPorId', (req, res) => {
+router.post('/obtenerPorId', (req, res) => {
   // Obtener los datos del cuerpo de la solicitud
-  
-  const { ID } = req.body;
 
-  const query = "SELECT * FROM Bancos WHERE ID = ?";
+  const { ID } = req.body;
+  if (req.session.user) {
+    const query = "SELECT * FROM Bancos WHERE ID = ?";
     connection.query(query, [ID], (err, results) => {
       if (err) {
         return res.status(500).json({ mensaje: 'Error al crear el usuario', error: err });
       }
-      
+
       res.status(201).json({
-        mensaje: 'Usuario creado exitosamente',
+        mensaje: 'Información obtenida',
         data: results
       });
     });
+  } else {
+    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+  }
+});
+
+router.post('/getSession', async (req, res) => {
+  if (req.session.user !== undefined) {
+    return res.status(201).json({
+      mensaje: 'Session ok',
+      data: { ok: true },
+    });
+  } else {
+    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+  }
 });
 
 module.exports = router;
