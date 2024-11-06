@@ -1,0 +1,31 @@
+CREATE TABLE Clientes(
+    
+    RFC VARCHAR(30) PRIMARY KEY,
+    Contrasena VARCHAR(300),
+    Nombre VARCHAR(50),
+    ApPaterno VARCHAR(50),
+    ApMaterno VARCHAR(50),
+    Edad INT, 
+    Telefono VARCHAR(40),
+    Correo VARCHAR(100),
+    FechaAlta DATE
+    
+)
+
+CREATE TABLE Bancos(
+    
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    Nombre VARCHAR(30),
+    Interes REAL,
+    Anios INT,
+    Enganche REAL
+    
+)
+
+CREATE TABLE Administradores(
+
+    Correo VARCHAR(100),
+    Contrasena VARCHAR(300),
+    Estatus VARCHAR(100)
+
+)
