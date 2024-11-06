@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Cotización de Préstamos</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .input-container, .table-container { max-width: 600px; margin: auto; }
+    label { display: block; margin-top: 10px; }
+    input[type="number"], input[type="range"], select { width: 100%; padding: 8px; margin: 5px 0; }
+    button { padding: 10px 20px; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; text-align: center; border: 1px solid #ccc; }
+    .result-container { margin-top: 20px; }
+    .range-label { display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+
+<h2>Sistema de Cotización de Préstamos</h2>
+
+<div class="input-container">
+  <label>Tipo de Cálculo:
+    <select id="tipoCalculo" onchange="toggleInputs()" required>
+      <option value="sueldo">Según Sueldo</option>
+      <option value="montoCasa">Según Monto de la Casa</option>
+    </select>
+  </label>
+
+  <label>Entidad Financiera:
+    <select id="entidadFinanciera" onchange="calcularPrestamo()" required>
+      <option value="BBVA">BBVA - 13.60% interés, 17.5% enganche</option>
+      <option value="HSBC">HSBC - 12.80% interés, 18.2% enganche</option>
+      <option value="Infonavit">Infonavit - 9% interés, 9.4% enganche (Máximo $2,000,000)</option>
+    </select>
+  </label>
+
+  <div id="sueldoInputs">
+    <label>Sueldo Mensual: <input type="number" id="sueldoMensual" min="0"></label>
+    <label>Porcentaje del Sueldo para Préstamo:
+      <div class="range-label">
+        <span>1%</span>
+        <span>40%</span>
+      </div>
+      <input type="range" id="porcentajeSueldo" min="1" max="40" value="40" oninput="actualizarPorcentaje()">
+      <p>Porcentaje Seleccionado: <span id="porcentajeDisplay">40</span>%</p>
+    </label>
+  </div>
+
+  <div id="montoCasaInputs" style="display: none;">
+    <label>Monto de la Casa: <input type="number" id="montoCasa" min="0"></label>
+  </div>
+
+  <button type="button" onclick="calcularPrestamo()">Calcular Préstamo</button>
+</div>
+
+<div class="result-container" id="resultContainer">
+  <h3>Resultados de la Cotización</h3>
+  <div id="resultadosPlazos"></div>
+</div>
+
+<script>
+  function toggleInputs() {
+    const tipoCalculo = document.getElementById("tipoCalculo").value;
+    document.getElementById("sueldoInputs").style.display = tipoCalculo === "sueldo" ? "block" : "none";
+    document.getElementById("montoCasaInputs").style.display = tipoCalculo === "montoCasa" ? "block" : "none";
+  }
+
+  function actualizarPorcentaje() {
+    const porcentaje = document.getElementById("porcentajeSueldo").value;
+    document.getElementById("porcentajeDisplay").textContent = porcentaje;
+  }
+
+  function calcularPrestamo() {
+    const tipoCalculo = document.getElementById("tipoCalculo").value;
+    const entidad = document.getElementById("entidadFinanciera").value;
+    
+    let tasaInteresAnual, porcentajeEnganche, maxCredito, plazos;
+
+    if (entidad === "BBVA") {
+      tasaInteresAnual = 13.60 / 100;
+      porcentajeEnganche = 17.5 / 100;
+      maxCredito = Infinity;
+      plazos = [5, 10, 15];
+    } else if (entidad === "HSBC") {
+      tasaInteresAnual = 12.80 / 100;
+      porcentajeEnganche = 18.2 / 100;
+      maxCredito = Infinity;
+      plazos = [10, 20];
+    } else if (entidad === "Infonavit") {
+      tasaInteresAnual = 9 / 100;
+      porcentajeEnganche = 9.4 / 100;
+      maxCredito = 2000000;
+      plazos = [10, 15];
+    }
+
+    const resultados = [];
+
+    plazos.forEach((plazoAnios) => {
+      const tasaMensual = tasaInteresAnual / 12;
+      const numeroPagos = plazoAnios * 12;
+      let mensualidad, montoCredito, enganche, valorCasaMaximo;
+
+      if (tipoCalculo === "sueldo") {
+        const sueldoMensual = parseFloat(document.getElementById("sueldoMensual").value);
+        const porcentajeSueldo = parseFloat(document.getElementById("porcentajeSueldo").value);
+        const mensualidadMaxima = sueldoMensual * (porcentajeSueldo / 100);
+
+        montoCredito = mensualidadMaxima * ((Math.pow(1 + tasaMensual, numeroPagos) - 1) / (tasaMensual * Math.pow(1 + tasaMensual, numeroPagos)));
+
+        if (entidad === "Infonavit" && montoCredito > maxCredito) {
+          montoCredito = maxCredito;
+        }
+
+        enganche = montoCredito * porcentajeEnganche / (1 - porcentajeEnganche);
+        valorCasaMaximo = montoCredito + enganche;
+        mensualidad = mensualidadMaxima;
+
+      } else if (tipoCalculo === "montoCasa") {
+        const montoCasa = parseFloat(document.getElementById("montoCasa").value);
+        enganche = montoCasa * porcentajeEnganche;
+        montoCredito = montoCasa - enganche;
+
+        if (entidad === "Infonavit" && montoCredito > maxCredito) {
+          alert("El monto de crédito no puede exceder los $2,000,000 para Infonavit.");
+          return;
+        }
+
+        mensualidad = montoCredito * (tasaMensual * Math.pow(1 + tasaMensual, numeroPagos)) / (Math.pow(1 + tasaMensual, numeroPagos) - 1);
+        valorCasaMaximo = montoCasa;
+      }
+
+      const montoTotalPagar = mensualidad * numeroPagos;
+      const meses = numeroPagos
+      resultados.push({
+        plazo: plazoAnios,
+        enganche: enganche.toFixed(2),
+        montoCredito: montoCredito.toFixed(2),
+        valorCasaMaximo: valorCasaMaximo.toFixed(2),
+        mensualidad: mensualidad.toFixed(2),
+        montoTotalPagar: montoTotalPagar.toFixed(2),
+        meses: meses
+      });
+    });
+
+    mostrarResultados(resultados);
+  }
+
+  function mostrarResultados(resultados) {
+    const resultadosPlazos = document.getElementById("resultadosPlazos");
+    resultadosPlazos.innerHTML = "";
+
+    resultados.forEach((resultado) => {
+      const resultadoDiv = document.createElement("div");
+      resultadoDiv.innerHTML = `
+        <p><strong>Plazo:</strong> ${resultado.plazo} años</p>
+        <p>Enganche: $${resultado.enganche}</p>
+        <p>Monto del Crédito: $${resultado.montoCredito}</p>
+        <p>Valor Máximo de la Casa: $${resultado.valorCasaMaximo}</p>
+        <p>Mensualidad: $${resultado.mensualidad}</p>
+        <p>Monto Total a Pagar: $${resultado.montoTotalPagar}</p>
+        <p>Meses: ${resultado.meses}</p>
+        <button onclick="guardarResultado(${resultado.plazo})">Guardar</button>
+        <hr>
+      `;
+      resultadosPlazos.appendChild(resultadoDiv);
+    });
+  }
+
+  function guardarResultado(plazo) {
+    alert(`Resultado para el plazo de ${plazo} años guardado.`);
+  }
+</script>
+
+</body>
+</html>
