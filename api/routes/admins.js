@@ -37,11 +37,11 @@ router.post('/login', (req, res) => {
   const query = 'SELECT * FROM Administradores WHERE Correo = ? AND Contrasena = ?'; // Asegúrate de que la tabla 'users' tenga la columna 'contrasena'
   connection.query(query, [correo, hashedPassword], (err, results) => {
     if (err) {
-      return res.status(500).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
+      return res.status(201).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
     }
 
     if (results.length <= 0) {
-      return res.status(400).json({ mensaje: 'No existe el Correo registrado', error: { Error: true } });
+      return res.status(201).json({ mensaje: 'No existe el Correo registrado', error: { Error: true } });
     }
 
     req.session.user = { correo: correo };
@@ -62,17 +62,17 @@ router.post('/onGuardarBanco', async (req, res) => {
       const query = 'SELECT * FROM Bancos WHERE Nombre = ? AND Interes = ? AND Anios = ? AND Enganche = ?';
       connection.query(query, [nombre, interes, anios, enganche], (err, results) => {
         if (err) {
-          return res.status(500).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
+          return res.status(201).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
         }
 
         if (results.length > 0) {
-          return res.status(400).json({ mensaje: 'El banco con las especificaciones ya existe', error: { Error: true } });
+          return res.status(201).json({ mensaje: 'El banco con las especificaciones ya existe', error: { Error: true } });
         }
 
         const query = 'INSERT INTO Bancos (Nombre, Interes, Anios, Enganche) VALUES (?, ?, ?, ?)';
         connection.query(query, [nombre, interes, anios, enganche], (err, results) => {
           if (err) {
-            return res.status(500).json({ mensaje: 'Error al crear el Banco', error: { Error: true, error: err } });
+            return res.status(201).json({ mensaje: 'Error al crear el Banco', error: { Error: true, error: err } });
           }
 
           return res.status(201).json({
@@ -82,10 +82,10 @@ router.post('/onGuardarBanco', async (req, res) => {
         });
       });
     } else {
-      return res.status(403).json({ mensaje: 'No es admin', error: { Error: true } });
+      return res.status(201).json({ mensaje: 'No es admin', error: { Error: true } });
     }
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
@@ -99,7 +99,7 @@ router.post('/onEliminarBanco', async (req, res) => {
       const query = 'DELETE FROM Bancos WHERE ID = ?';
       connection.query(query, [idBanco], (err, results) => {
         if (err) {
-          return res.status(500).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
+          return res.status(201).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
         }
 
         return res.status(201).json({
@@ -108,10 +108,10 @@ router.post('/onEliminarBanco', async (req, res) => {
         });
       });
     } else {
-      return res.status(403).json({ mensaje: 'No es admin', error: { Error: true } });
+      return res.status(201).json({ mensaje: 'No es admin', error: { Error: true } });
     }
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
@@ -132,7 +132,7 @@ router.post('/onModificarBancos', async (req, res) => {
 
         if (flag === false) {
 
-          return res.status(500).json({ mensaje: 'Error de base de datos', error: { Error: true } });
+          return res.status(201).json({ mensaje: 'Error de base de datos', error: { Error: true } });
 
         } else {
           return res.status(201).json({
@@ -142,10 +142,10 @@ router.post('/onModificarBancos', async (req, res) => {
         }
       }
     } else {
-      return res.status(403).json({ mensaje: 'No es admin', error: { Error: true } });
+      return res.status(201).json({ mensaje: 'No es admin', error: { Error: true } });
     }
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
@@ -159,7 +159,7 @@ router.post('/onEliminarCliente', async (req, res) => {
       const query = 'DELETE FROM Clientes WHERE RFC = ?';
       connection.query(query, [rfc], (err, results) => {
         if (err) {
-          return res.status(500).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
+          return res.status(201).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
         }
 
         return res.status(201).json({
@@ -168,10 +168,36 @@ router.post('/onEliminarCliente', async (req, res) => {
         });
       });
     } else {
-      return res.status(403).json({ mensaje: 'No es admin', error: { Error: true } });
+      return res.status(201).json({ mensaje: 'No es admin', error: { Error: true } });
     }
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
+  }
+});
+
+router.post('/onEliminarUsuario', async (req, res) => {
+  // Obtener los datos del cuerpo de la solicitud
+  const { rfcU, correo } = req.body;
+  const isAdmin = await esAdmin(correo);
+
+  if (req.session.user.correo) {
+    if (isAdmin) {
+      const query = 'DELETE FROM Clientes WHERE RFC = ?';
+      connection.query(query, [rfcU], (err, results) => {
+        if (err) {
+          return res.status(201).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
+        }
+
+        return res.status(201).json({
+          mensaje: 'Banco eliminado exitosamente',
+          data: { ok: true },
+        });
+      });
+    } else {
+      return res.status(201).json({ mensaje: 'No es admin', error: { Error: true } });
+    }
+  } else {
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 
@@ -182,7 +208,7 @@ router.post('/getSession', async (req, res) => {
       data: { ok: true },
     });
   } else {
-    return res.status(500).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
   }
 });
 

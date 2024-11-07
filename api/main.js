@@ -1,6 +1,12 @@
 // index.js
 const express = require('express');
 const session = require('express-session');
+const cors = require('cors');
+
+// Importa el archivo de rutas
+const userRoutes = require('./routes/usuario');
+const bancosRoutes = require('./routes/bancos');
+const adminsRoutes = require('./routes/admins');
 
 const app = express();
 const port = 3000;
@@ -10,19 +16,24 @@ const connection = require('./resources/db');
 // Middleware para parsear JSON
 app.use(express.json());
 
+app.use(cors({
+  origin: 'http://localhost', // Cambia esto por el origen de tu cliente si es necesario
+  methods: 'GET,POST,PUT,DELETE',
+  credentials: true // Habilita las cookies y encabezados de sesión en la solicitud
+}));
+
 app.use(
   session({
     secret: 'RemBestGirl',
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 3600000 } // 1 minuto
+    cookie: {
+      maxAge: 3600000,         // Expiración de la cookie en ms
+      sameSite: 'lax',       // Cambiar a 'none' si usas HTTPS en producción
+      secure: false          // Cambia a true si usas HTTPS en producción
+    } // 1 minuto
   })
 );
-
-// Importa el archivo de rutas
-const userRoutes = require('./routes/usuario');
-const bancosRoutes = require('./routes/bancos');
-const adminsRoutes = require('./routes/admins');
 
 // Monta las rutas en un prefijo, como "/api/users"
 app.use('/usuario', userRoutes);

@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inicio de Sesión</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <!-- jQuery Validate -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+    <!-- Incluir HoldOn.js desde CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holdonjs@1.1.0/dist/HoldOn.min.css">
+    <link rel="stylesheet" href="HoldOn.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -76,35 +85,69 @@
     <form id="loginForm" onsubmit="return validateForm()">
         <div class="input-group">
             <label for="usuario">usuario:</label>
-            <input type="text" id="usuario" placeholder="Ingresa tu nombre de usuario" required>
+            <input type="email" id="usuario" placeholder="Ingresa tu nombre de usuario" required>
         </div>
         <div class="input-group">
             <label for="password">Contraseña:</label>
             <input type="password" id="password" placeholder="Ingresa tu contraseña" required>
         </div>
-        <button type="submit" class="btn">Iniciar Sesión</button>
+        <button id="btnIniciar" class="btn">Iniciar Sesión</button>
         <p class="error-message" id="errorMessage">Por favor, ingresa un usuario válido.</p>
     </form>
 </div>
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="HoldOn.min.js"></script>
+
+<!-- Incluir Notify.js desde CDN -->
+<script src="notify.js"></script>
+<script src="notify.min.js"></script>
 
 <script>
-    function validateForm() {
-        const usuario = document.getElementById("usuario").value;
-        const password = document.getElementById("password").value;
-        const errorMessage = document.getElementById("errorMessage");
+    $(document).ready(function () {
+            $("#btnIniciar").click(function (e) {
+                e.preventDefault();
 
-        //const emailRegex = /^[^@]+@[^@]+\.[a-zA-Z]{2,}$/;
-        //const rfcRegex = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
+                let correo = $("#usuario").val()
+                let cont = $("#password").val()
 
-        /*if (!rfcRegex.test(rfc)) {
-            errorMessage.style.display = "block";
-            return false;
-        }*/
-        
-        errorMessage.style.display = "none";
-        alert("Inicio de sesión exitoso");
-        return true;
-    }
+                var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+                if (correo !== '' && regex.test(correo) && cont !== '') {
+                    $.ajax({
+                        url: 'http://localhost:3000/admins/login',
+                        type: 'POST',
+                        dataType: 'json',
+                        data: JSON.stringify({
+                            correo: correo,
+                            contrasena: cont
+                        }),
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        contentType: 'application/json'
+                    }).then(function (response) {
+                        // Se ejecuta si la solicitud es exitosa
+                        if (response.error) {
+                            $.notify("Algo fallo: " + response.mensaje, "error");
+                        } else {
+                            //url del dashbord de admins
+                            window.location.href = 'http://localhost/loginusers.html';
+                            console.log('Éxito:', response);
+                            $.notify("Inicio exitoso", "success");
+                        }
+                    }).always(function () {
+                        // Se ejecuta siempre, sin importar si fue éxito o error
+                        HoldOn.close()
+                        console.log('La solicitud ha finalizado.');
+                    });
+                } else {
+                    $.notify("Rellena todos los campos de forma adecuada", "error");
+                }
+            })
+        })
 </script>
 
 </body>
