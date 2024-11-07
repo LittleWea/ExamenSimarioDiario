@@ -5,23 +5,17 @@ const connection = require('../resources/db');
 
 // Ruta para crear un usuario
 router.post('/obtener', (req, res) => {
-  // Obtener los datos del cuerpo de la solicitud
-  const { Buscar } = req.body;
-
+  console.log(req.session.user)
   if (req.session.user) {
-    const query = "SELECT * FROM Bancos WHERE Nombre LIKE CONCAT('%', ?, '%')"
-    connection.query(query, [Buscar], (err, results) => {
+    const query = "SELECT * FROM Bancos WHERE Nombre LIKE CONCAT('%', ?, '%')";
+    connection.query(query, [req.body.Buscar], (err, results) => {
       if (err) {
-        return res.status(201).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
+        return res.status(201).json({ mensaje: 'Error en la búsqueda', error: err });
       }
-
-      res.status(201).json({
-        mensaje: 'Usuario creado exitosamente',
-        data: results
-      });
+      return res.status(200).json({ mensaje: 'Datos obtenidos exitosamente', data: results });
     });
   } else {
-    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
+    return res.status(201).json({ mensaje: 'No hay sesión activa' });
   }
 });
 

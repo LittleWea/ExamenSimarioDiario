@@ -22,7 +22,7 @@ router.post('/create', (req, res) => {
     }
 
     if (results.length > 0) {
-      return res.status(201).json({ mensaje: 'El RFC ya está en uso', error: { Error: true, error: err } });
+      return res.status(201).json({ mensaje: 'El RFC ya está en uso', error: { Error: true } });
     }
 
     const insertQuery = 'INSERT INTO clientes (RFC, Nombre, ApPaterno, ApMaterno, Edad, Telefono, Correo, Contrasena, FechaAlta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'; // Asegúrate de que la tabla 'users' tenga la columna 'contrasena'
@@ -52,10 +52,12 @@ router.post('/login', (req, res) => {
     }
 
     if (results.length <= 0) {
-      return res.status(201).json({ mensaje: 'No existe el RFC registrado', error: { Error: true } });
+      return res.status(201).json({ mensaje: 'No existe el RFC registrado', error: { Error: true} });
     }
 
     req.session.user = { rfc: rfc };
+
+    console.log(req.session.user)
     return res.status(201).json({
       mensaje: 'Usuario logeado exitosamente',
       data: { id: results.insertId, rfc, access_control: "si"},
@@ -64,7 +66,8 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/getSession', async (req, res) => {
-  if (req.session.user.correo) {
+  console.log(req.session.user)
+  if (req.session.user) {
     return res.status(201).json({
       mensaje: 'Session ok',
       data: { ok: true },

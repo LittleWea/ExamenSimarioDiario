@@ -175,6 +175,32 @@ router.post('/onEliminarCliente', async (req, res) => {
   }
 });
 
+router.post('/onEliminarUsuario', async (req, res) => {
+  // Obtener los datos del cuerpo de la solicitud
+  const { rfcU, correo } = req.body;
+  const isAdmin = await esAdmin(correo);
+
+  if (req.session.user.correo) {
+    if (isAdmin) {
+      const query = 'DELETE FROM Clientes WHERE RFC = ?';
+      connection.query(query, [rfcU], (err, results) => {
+        if (err) {
+          return res.status(201).json({ mensaje: 'Error de base de datos', error: { Error: true, error: err } });
+        }
+
+        return res.status(201).json({
+          mensaje: 'Banco eliminado exitosamente',
+          data: { ok: true },
+        });
+      });
+    } else {
+      return res.status(201).json({ mensaje: 'No es admin', error: { Error: true } });
+    }
+  } else {
+    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
+  }
+});
+
 router.post('/getSession', async (req, res) => {
   if (req.session.user !== undefined) {
     return res.status(201).json({

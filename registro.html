@@ -99,10 +99,10 @@
                         contentType: 'application/json'
                     }).then(function (response) {
                         // Se ejecuta si la solicitud es exitosa
-                        if (response.Error) {
+                        if (response.error) {
                             $.notify("Algo fallo: " + response.mensaje, "error");
                         } else {
-                            window.location.href = 'http://localhost/loginusers.html';
+                            // window.location.href = 'http://localhost/loginusers.html';
                             console.log('Éxito:', response);
                             $.notify("Se creo el usuario con exito", "success");
                         }
