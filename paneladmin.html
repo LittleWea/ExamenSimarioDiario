@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios y Bancos</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: "Comic Sans MS", sans-serif;
+      background-color: #342a55; /* Fondo oscuro */
+      color: #f4d03f; /* Amarillo vibrante */
+      margin: 20px;
+    }
+
+    h1, h2 {
+      font-family: 'Impact', sans-serif;
+      color: #ff00ff;
+      text-shadow: 2px 2px #000;
+      letter-spacing: 1px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      background: linear-gradient(45deg, #2e86de, #eb4d4b);
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      color: #fff;
+      font-weight: bold;
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      background-color: #eb4d4b;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: transform 0.2s, background-color 0.2s;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+      font-size: 14px;
+    }
+
+    button:hover {
+      background-color: #ff00ff;
+      transform: scale(1.1);
+    }
+
+    #banco-modal {
+      background-color: rgba(0, 0, 0, 0.7);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    #banco-modal form {
+      background: linear-gradient(135deg, #ff00ff, #2e86de);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+      color: #fff;
+    }
+
+    #banco-modal label {
+      color: #f4d03f;
+    }
+
+    input[type="text"], input[type="number"] {
+      padding: 8px;
+      width: 100%;
+      margin: 5px 0 15px;
+      border: none;
+      border-radius: 4px;
+      background: #333;
+      color: #f4d03f;
+      font-weight: bold;
+    }
+
+    input[type="text"]:focus, input[type="number"]:focus {
+      outline: 2px solid #ff00ff;
+    }
+
+    #modal-title {
+      text-align: center;
+      font-size: 24px;
+      font-family: 'Impact', sans-serif;
+      color: #f4d03f;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px #000;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Gestión de Usuarios y Bancos</h1>
+
+  <h2>Lista de Usuarios</h2>
+  <ul id="usuarios-list">
+    <!-- Lista de usuarios será insertada aquí -->
+  </ul>
+
+  <h2>Lista de Bancos</h2>
+  <button id="agregar-banco-btn">Agregar Banco</button>
+  <ul id="bancos-list">
+    <!-- Lista de bancos será insertada aquí -->
+  </ul>
+
+  <!-- Modal para agregar y modificar banco -->
+  <div id="banco-modal" style="display: none;">
+    <h3 id="modal-title">Agregar Banco</h3>
+    <form id="banco-form">
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" required>
+      <label for="interes">Interés:</label>
+      <input type="text" id="interes" name="interes" required>
+      <label for="anios">Años:</label>
+      <input type="number" id="anios" name="anios" required>
+      <label for="enganche">Enganche:</label>
+      <input type="text" id="enganche" name="enganche" required>
+      <button type="submit">Guardar</button>
+      <button type="button" onclick="closeModal()">Cancelar</button>
+    </form>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- Incluye jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Incluye html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+
+  <script src="HoldOn.min.js"></script>
+
+  <!-- Incluir Notify.js desde CDN -->
+  <script src="notify.js"></script>
+  <script src="notify.min.js"></script>
+  <script>
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return "";
+    }
+
+     $(document).ready(function () {
+      HoldOn.open({
+        theme: "sk-cube-grid"
+      })
+      $.ajax({
+        url: 'http://localhost:3000/admins/getSession',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        xhrFields: {
+          withCredentials: true
+        }
+      }).then(function (response) {
+        console.log(response)
+        if (response.error) {
+          window.location.href = 'http://localhost/loginadmin.html';
+
+          console.log("aaa")
+        } else {
+          $.ajax({
+            url: 'http://localhost:3000/bancos/obtener',
+            type: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            xhrFields: {
+              withCredentials: true
+            },
+            data: JSON.stringify({ Buscar: '' })
+          }).then(function (response) {
+            if (response.error) {
+              window.location.href = 'http://localhost/loginusers.html';
+            } else {
+              let respuesta = response.data
+
+              $.each(respuesta, function (index, value) {
+                let option = $("<option>").attr("value", value.ID).text(value.Nombre + " Enganche: " + value.Enganche + " Interes: " + value.Interes + " Años: " + value.Anios);
+
+                $("#entidadFinanciera").append(option)
+
+              })
+            }
+          });
+        }
+      }).always(function () {
+        // Se ejecuta siempre, sin importar si fue éxito o error
+        HoldOn.close()
+        console.log('La solicitud ha finalizado.');
+      });
+    });
+    function cargarUsuarios() {
+        let correo = getCookie("correo")
+        $.ajax({
+          url: 'http://localhost:3000/admins/clientes',
+          type: 'POST',
+          data: {correo: correo},
+          xhrFields: {
+              withCredentials: true
+            },
+          success: function(response) {
+            const usuariosList = $('#usuarios-list');
+            usuariosList.empty();
+            console.log(response)
+            if (response.data) {
+              response.data.forEach(usuario => {
+                usuariosList.append(`
+                  <li>
+                    ${usuario.Nombre} ${usuario.ApPaterno}
+                    <button onclick="eliminarUsuario('${usuario.RFC}')">Eliminar</button>
+                  </li>
+                `);
+              });
+            }
+          },
+          error: function() {
+            alert("Error al cargar los usuarios.");
+          }
+        });
+      }
+
+      // Cargar lista de bancos
+      function cargarBancos() {
+        let correo = getCookie("correo")
+        $.ajax({
+          url: 'http://localhost:3000/admins/bancos',
+          type: 'POST',
+          data: {correo: correo},
+          xhrFields: {
+              withCredentials: true
+            },
+          success: function(response) {
+            const bancosList = $('#bancos-list');
+            bancosList.empty();
+            if (response.data) {
+              response.data.forEach(banco => {
+                bancosList.append(`
+                  <li>
+                    ${banco.Nombre} - ${banco.Interes}% - ${banco.Anios} años - ${banco.Enganche}%
+                    <button onclick="abrirModal('${banco.ID}', '${banco.Nombre}', '${banco.Interes}', '${banco.Anios}', '${banco.Enganche}')">Modificar</button>
+                    <button onclick="eliminarBanco('${banco.ID}')">Eliminar</button>
+                  </li>
+                `);
+              });
+            }
+          },
+          error: function() {
+            alert("Error al cargar los bancos.");
+          }
+        });
+      }
+
+      // Eliminar usuario
+      function eliminarUsuario(rfc) {
+        let correo = getCookie("correo")
+        $.ajax({
+          url: 'http://localhost:3000/admins/onEliminarUsuario',
+          type: 'POST',
+          data: JSON.stringify({ rfcU: rfc, correo: correo }),
+          contentType: 'application/json',
+          xhrFields: {
+              withCredentials: true
+            },
+          success: function(response) {
+            alert(response.mensaje);
+            cargarUsuarios(); // Recargar la lista de usuarios
+          },
+          error: function() {
+            alert("Error al eliminar el usuario.");
+          }
+        });
+      }
+
+      // Eliminar banco
+      function eliminarBanco(idBanco) {
+        let correo = getCookie("correo")
+        $.ajax({
+          url: 'http://localhost:3000/admins/onEliminarBanco',
+          type: 'POST',
+          data: JSON.stringify({ idBanco: idBanco }),
+          contentType: 'application/json',
+          xhrFields: {
+              withCredentials: true
+            },
+          success: function(response) {
+            alert(response.mensaje);
+            cargarBancos(); // Recargar la lista de bancos
+          },
+          error: function() {
+            alert("Error al eliminar el banco.");
+          }
+        });
+      }
+
+      // Abrir modal para agregar/modificar banco
+      function abrirModal(ID = '', Nombre = '', Interes = '', Anios = '', Enganche = '') {
+        $('#modal-title').text(ID ? 'Modificar Banco' : 'Agregar Banco');
+        $('#nombre').val(Nombre);
+        $('#interes').val(Interes);
+        $('#anios').val(Anios);
+        $('#enganche').val(Enganche);
+        $('#banco-form').off('submit').on('submit', function(e) {
+          e.preventDefault();
+          guardarBanco(ID);
+        });
+        $('#banco-modal').show();
+      }
+
+      // Guardar banco (agregar o modificar)
+      function guardarBanco(ID) {
+        let correo = getCookie("correo")
+        const Nombre = $('#nombre').val();
+        const Interes = $('#interes').val();
+        const Anios = $('#anios').val();
+        const Enganche = $('#enganche').val();
+
+        const url = ID ? 'http://localhost:3000/admins/onModificarBancos' : 'http://localhost:3000/admins/onAgregarBanco';
+        $.ajax({
+          url: url,
+          type: 'POST',
+          data: JSON.stringify({ ID, Nombre, Interes, Anios, Enganche, correo }),
+          contentType: 'application/json',
+          xhrFields: {
+          withCredentials: true
+          },
+          success: function(response) {
+            alert(response.mensaje);
+            closeModal();
+            cargarBancos(); // Recargar la lista de bancos
+          },
+          error: function() {
+            alert("Error al guardar el banco.");
+          }
+        });
+      }
+
+      // Cerrar modal
+      function closeModal() {
+        $('#banco-modal').hide();
+      }
+
+      cargarUsuarios();
+      cargarBancos();
+
+      $('#agregar-banco-btn').click(function() {
+        abrirModal(); // Abrir modal vacío para agregar un nuevo banco
+      });
+      // Cargar lista de usuarios
+  
+  </script>
+</body>
+</html>
