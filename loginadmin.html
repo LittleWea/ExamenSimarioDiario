@@ -12,7 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
     <!-- Incluir HoldOn.js desde CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holdonjs@1.1.0/dist/HoldOn.min.css">
-    <link rel="stylesheet" href="HoldOn.min.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -84,7 +83,7 @@
     <h2>Inicio de Sesión</h2>
     <form id="loginForm" onsubmit="return validateForm()">
         <div class="input-group">
-            <label for="usuario">usuario:</label>
+            <label for="usuario">Usuario:</label>
             <input type="email" id="usuario" placeholder="Ingresa tu nombre de usuario" required>
         </div>
         <div class="input-group">
@@ -99,56 +98,77 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-<script src="HoldOn.min.js"></script>
-
-<!-- Incluir Notify.js desde CDN -->
-<script src="notify.js"></script>
-<script src="notify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/holdonjs@1.1.0/dist/HoldOn.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/notifyjs-browser/dist/notify.js"></script>
 
 <script>
+    // Función para establecer una cookie
+    function setCookie(name, value, days) {
+        const d = new Date();
+        d.setTime(d.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+    }
+
+    // Función para obtener una cookie por nombre
+    function getCookie(name) {
+        const nameEQ = name + "=";
+        const ca = document.cookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return "";
+    }
+
+    // Al cargar la página, mostrar el correo almacenado si existe la cookie
     $(document).ready(function () {
-            $("#btnIniciar").click(function (e) {
-                e.preventDefault();
+        const savedEmail = getCookie("correo");
+        if (savedEmail) {
+            $("#usuario").val(savedEmail);
+        }
 
-                let correo = $("#usuario").val()
-                let cont = $("#password").val()
+        $("#btnIniciar").click(function (e) {
+            e.preventDefault();
+            let correo = $("#usuario").val();
+            let cont = $("#password").val();
 
-                var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-                if (correo !== '' && regex.test(correo) && cont !== '') {
-                    $.ajax({
-                        url: 'http://localhost:3000/admins/login',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: JSON.stringify({
-                            correo: correo,
-                            contrasena: cont
-                        }),
-                        xhrFields: {
-                            withCredentials: true
-                        },
-                        contentType: 'application/json'
-                    }).then(function (response) {
-                        // Se ejecuta si la solicitud es exitosa
-                        if (response.error) {
-                            $.notify("Algo fallo: " + response.mensaje, "error");
-                        } else {
-                            //url del dashbord de admins
-                            window.location.href = 'http://localhost/loginusers.html';
-                            console.log('Éxito:', response);
-                            $.notify("Inicio exitoso", "success");
-                        }
-                    }).always(function () {
-                        // Se ejecuta siempre, sin importar si fue éxito o error
-                        HoldOn.close()
-                        console.log('La solicitud ha finalizado.');
-                    });
-                } else {
-                    $.notify("Rellena todos los campos de forma adecuada", "error");
-                }
-            })
-        })
+            if (correo !== '' && regex.test(correo) && cont !== '') {
+                $.ajax({
+                    url: 'http://localhost:3000/admins/login',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: JSON.stringify({
+                        correo: correo,
+                        contrasena: cont
+                    }),
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    contentType: 'application/json'
+                }).then(function (response) {
+                    if (response.error) {
+                        $.notify("Algo falló: " + response.mensaje, "error");
+                    } else {
+                        // Guardar el correo en una cookie válida por 7 días
+                        setCookie("correo", correo, 1);
+                        // Redirigir al dashboard
+                        window.location.href = 'http://localhost/practicas/ExamenSemenDiario/paneladmin.html';
+                        $.notify("Inicio exitoso", "success");
+                    }
+                }).always(function () {
+                    HoldOn.close();
+                });
+            } else {
+                $.notify("Rellena todos los campos de forma adecuada", "error");
+            }
+        });
+    });
 </script>
 
 </body>
 </html>
+
