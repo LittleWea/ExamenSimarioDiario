@@ -16,60 +16,140 @@
   <link rel="stylesheet" href="HoldOn.min.css">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
+  font-family: 'Impact', sans-serif;
+  margin: 20px;
+  background-color: #f4f1e3;
+  color: #2b2b2b;
+  text-shadow: 1px 1px #f7d51d;
+}
 
-    .input-container,
-    .table-container {
-      max-width: 600px;
-      margin: auto;
-    }
+h2 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #9b59b6;
+  text-align: center;
+  text-shadow: 3px 3px #f1c40f;
+}
 
-    label {
-      display: block;
-      margin-top: 10px;
-    }
+.input-container,
+.table-container {
+  max-width: 600px;
+  margin: auto;
+  border: 2px solid #333;
+  box-shadow: 4px 4px #8e44ad, 6px 6px #2980b9;
+  padding: 20px;
+  background: #ecf0f1;
+  border-radius: 8px;
+}
 
-    input[type="number"],
-    input[type="range"],
-    select {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-    }
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #8e44ad;
+}
 
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-    }
+input[type="number"],
+input[type="range"],
+select {
+  width: 100%;
+  padding: 8px;
+  margin: 5px 0;
+  font-size: 1.1rem;
+  background-color: #ecf0f1;
+  border: 2px solid #8e44ad;
+  border-radius: 4px;
+  transition: 0.3s;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
+input[type="number"]:focus,
+input[type="range"]:focus,
+select:focus {
+  outline: none;
+  border-color: #f39c12;
+  box-shadow: 0px 0px 8px #f39c12;
+}
 
-    th,
-    td {
-      padding: 10px;
-      text-align: center;
-      border: 1px solid #ccc;
-    }
+button {
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  margin-top: 10px;
+  background-color: #8e44ad;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: 0.3s;
+  box-shadow: 3px 3px #f1c40f;
+}
+.imagen-resultado {
+  text-align: center;
+  margin-top: 10px;
+}
 
-    .result-container {
-      margin-top: 20px;
-    }
+.imagen-resultado img {
+  max-width: 80%; /* Ajusta el tamaño de la imagen */
+  height: auto;
+  border-radius: 8px; /* Opcional, para bordes redondeados */
+}
 
-    .range-label {
-      display: flex;
-      justify-content: space-between;
+button:hover {
+  background-color: #f39c12;
+  color: #2b2b2b;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  box-shadow: 4px 4px #2980b9;
+}
+
+th,
+td {
+  padding: 10px;
+  text-align: center;
+  border: 2px solid #8e44ad;
+  font-size: 1.1rem;
+  color: #2b2b2b;
+  background-color: #f4f1e3;
+}
+
+th {
+  background-color: #9b59b6;
+  color: #fff;
+}
+
+.result-container {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #ecf0f1;
+  border: 2px dashed #8e44ad;
+  border-radius: 6px;
+  display: none;
+}
+
+.range-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #8e44ad;
+}
+.logout-container {
+      text-align: right;
     }
   </style>
 </head>
 
 <body>
-
+  <div class="logout-container">
+    <button id="logoutButton" onclick="cerrarSesion()">Cerrar Sesión</button>
+    <span id="usuarioNombre" style="font-size: 1.2rem; color: #8e44ad;"></span>
+  </div>
+  <br>
   <h2>Sistema de Cotización de Préstamos</h2>
 
   <div class="input-container">
@@ -81,7 +161,7 @@
     </label>
 
     <label>Entidad Financiera:
-      <select id="entidadFinanciera" onchange="calcularPrestamo()" required>
+      <select id="entidadFinanciera" onchange="ocultarResultado()" required>
         <option value=""></option>
       </select>
     </label>
@@ -106,7 +186,7 @@
   </div>
 
   <div class="result-container" id="resultContainer">
-    <h3>Resultados de la Cotización</h3>
+    
     <div id="resultadosPlazos"></div>
   </div>
 
@@ -145,6 +225,11 @@
 
           console.log("aaa")
         } else {
+          
+          const nombreUsuario = response.data.Nombre
+          console.log("Nombre de usuario:", nombreUsuario);
+          // Mostrar el nombre del usuario en la interfaz
+          document.getElementById("usuarioNombre").textContent = "Bienvenido, " + nombreUsuario;
           $.ajax({
             url: 'http://localhost:3000/bancos/obtener',
             type: 'POST',
@@ -186,10 +271,25 @@
       const porcentaje = document.getElementById("porcentajeSueldo").value;
       document.getElementById("porcentajeDisplay").textContent = porcentaje;
     }
+    function ocultarResultado() {
+    document.getElementById("resultContainer").style.display = "none";
+    document.getElementById("btnGuardar").style.display = "none";
+  }
+
 
     function calcularPrestamo() {
-      const tipoCalculo = document.getElementById("tipoCalculo").value;
+      document.getElementById("resultadosPlazos").innerHTML = "";
 
+      const tipoCalculo = document.getElementById("tipoCalculo").value;
+        // Aquí muestras los resultados y el botón de guardar
+        const entidadSeleccionada = document.getElementById("entidadFinanciera").value;
+      if (entidadSeleccionada) {
+        console.log("Calculando préstamo...");
+        document.getElementById("resultContainer").style.cssText = "display: block !important";
+        document.getElementById("btnGuardar").style.cssText = "display: inline !important";
+      } else {
+        alert("Selecciona una entidad financiera antes de calcular.");
+      }
       let tasaInteresAnual, porcentajeEnganche, maxCredito, plazos;
 
       HoldOn.open({
@@ -278,26 +378,59 @@
         console.log('La solicitud ha finalizado.');
       });
     }
-
     function mostrarResultados(resultados) {
-      const resultadosPlazos = document.getElementById("resultadosPlazos");
-      resultadosPlazos.innerHTML = "";
+      $.ajax({
+        url: 'http://localhost:3000/usuario/getSession',
+        type: 'POST',
+        dataType: 'json',
+        contentType: 'application/json',
+        xhrFields: {
+          withCredentials: true
+        }
+      }).then(function (response) {
+    const resultadosPlazos = document.getElementById("resultadosPlazos");
+    const nombreUsuario = response.data.Nombre
+        
+    // Obtener la fecha actual    resultadosPlazos.innerHTML = ""; // Limpiar contenido anterior
 
-      resultados.forEach((resultado) => {
-        const resultadoDiv = document.createElement("div");
-        resultadoDiv.innerHTML = `
+    const fechaActual = new Date().toLocaleDateString();
+
+    // Encabezado con fecha
+    const encabezado = document.createElement("div");
+    encabezado.innerHTML = `
+      <h2>Resultados del Préstamo</h2>
+      <p>Fecha de Creación: ${fechaActual}</p>
+      <p>Creado por: ${nombreUsuario}</p>
+      <p>Su cotización ha si do exitosa</p>
+      <hr>
+    `;
+  
+    resultadosPlazos.appendChild(encabezado);
+  
+    // Contenido de los resultados
+    resultados.forEach((resultado, index) => {
+      const resultadoDiv = document.createElement("div");
+      resultadoDiv.classList.add("resultado-item");
+      resultadoDiv.innerHTML = `
         <p><strong>Plazo:</strong> ${resultado.plazo} años</p>
-        <p>Enganche: $${resultado.enganche}</p>
-        <p>Monto del Crédito: $${resultado.montoCredito}</p>
-        <p>Valor Máximo de la Casa: $${resultado.valorCasaMaximo}</p>
-        <p>Mensualidad: $${resultado.mensualidad}</p>
-        <p>Monto Total a Pagar: $${resultado.montoTotalPagar}</p>
-        <p>Meses: ${resultado.meses}</p>
+        <p><strong>Enganche:</strong> $${resultado.enganche}</p>
+        <p><strong>Monto del Crédito:</strong> $${resultado.montoCredito}</p>
+        <p><strong>Valor Máximo de la Casa:</strong> $${resultado.valorCasaMaximo}</p>
+        <p><strong>Mensualidad:</strong> $${resultado.mensualidad}</p>
+        <p><strong>Monto Total a Pagar:</strong> $${resultado.montoTotalPagar}</p>
+        <p><strong>Meses:</strong> ${resultado.meses}</p>
+         <div class="imagen-resultado">
+        <img src="api/resources/images.png" />
+      </div>
         <hr>
       `;
-        resultadosPlazos.appendChild(resultadoDiv);
+      resultadosPlazos.appendChild(resultadoDiv);
+    
       });
-    }
+    });
+    
+  }
+
 
     $("#btnGuardar").click(function () {
       var element = document.getElementById('resultContainer');
@@ -315,6 +448,21 @@
       // Genera el PDF
       html2pdf().set(options).from(element).save();
     })
+    function cerrarSesion() {
+      $.ajax({
+        url: 'http://localhost:3000/usuario/logout',
+        type: 'POST',
+        xhrFields: {
+          withCredentials: true
+        },
+        success: function () {
+          window.location.href = 'http://localhost/practicas/ExamenSemenDiario/loginusers.html';
+        },
+        error: function () {
+          alert("Error al cerrar la sesión.");
+        }
+      });
+    }
   </script>
 
 </body>

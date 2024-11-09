@@ -102,10 +102,25 @@
       margin-bottom: 15px;
       text-shadow: 2px 2px #000;
     }
+    .register-link p {
+    margin-top: 15px;
+    color: #9b59b6;
+}
+
+.register-link a {
+    color: red;
+    font-weight: bold;
+    text-decoration: none;
+    text-shadow: 2px 2px #f1c40f;
+}
+
+.register-link a:hover {
+    color: #8e44ad;
+}
   </style>
 </head>
 <body>
-
+  <button id="logout-btn" style="float: right; margin-right: 20px;">Cerrar sesión</button>
   <h1>Gestión de Usuarios y Bancos</h1>
 
   <h2>Lista de Usuarios</h2>
@@ -135,6 +150,10 @@
       <button type="button" onclick="closeModal()">Cancelar</button>
     </form>
   </div>
+    <div class="register-link">
+      <center><a href="registro_admin.html">Registrar Administradores</a></center>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <!-- Incluye jQuery -->
@@ -365,7 +384,18 @@
         abrirModal(); // Abrir modal vacío para agregar un nuevo banco
       });
       // Cargar lista de usuarios
-  
+      // Función para borrar la cookie del correo
+    function borrarCookie(nombre) {
+        document.cookie = nombre + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;';
+    }
+
+    // Evento para el botón de cerrar sesión
+    $('#logout-btn').click(function() {
+        borrarCookie('correo'); // Borra la cookie del correo
+        window.location.href = 'http://localhost/practicas/ExamenSemenDiario/loginadmin.html'; // Redirige al login admin
+    });
+
   </script>
 </body>
 </html>
+
