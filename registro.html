@@ -15,11 +15,84 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/holdonjs@1.1.0/dist/HoldOn.min.css">
     <link rel="stylesheet" href="HoldOn.min.css">
 
+    <style>
+        /* Estilo de fondo */
+        body {
+            background-color: #2e2e2e;
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+          
+            
+        }
+
+        /* Contenedor principal */
+        .container {
+            background-color: #000;
+            border: 3px solid #ffcc00;
+            padding: 40px;
+            border-radius: 10px;
+            max-width: 500px;
+            box-shadow: 0 0 15px rgba(255, 255, 0, 0.6), 0 0 15px rgba(128, 0, 128, 0.6);
+        }
+
+        /* Título */
+        h2 {
+            font-family: 'Impact', sans-serif;
+            font-size: 36px;
+            color: #ffcc00;
+            text-shadow: 2px 2px #800080;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Formulario */
+        .form-control {
+            background-color: #333;
+            color: #ffcc00;
+            border: 1px solid #800080;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .form-control::placeholder {
+            color: #ffcc00;
+            opacity: 0.7;
+        }
+
+        .form-control:focus {
+            border-color: #ffcc00;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+
+        /* Botón de registro */
+        .btn-primary {
+            background-color: #800080;
+            border: none;
+            color: #ffcc00;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px #000;
+        }
+
+        .btn-primary:hover {
+            background-color: #ffcc00;
+            color: #800080;
+            box-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+        }
+
+        /* Estilos personalizados de JoJo's */
+        .jojo-shadow {
+            text-shadow: 2px 2px 0 #ffcc00, -2px -2px 0 #800080;
+        }
+    </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h2 class="text-center">Formulario de Registro</h2>
+        <h2 class="text-center jojo-shadow">Formulario de Registro</h2>
         <form>
             <div class="form-group">
                 <label for="rfc">RFC</label>
@@ -31,13 +104,11 @@
             </div>
             <div class="form-group">
                 <label for="apPaterno">Apellido Paterno</label>
-                <input type="text" class="form-control" id="apPaterno" placeholder="Ingrese su apellido paterno"
-                    required>
+                <input type="text" class="form-control" id="apPaterno" placeholder="Ingrese su apellido paterno" required>
             </div>
             <div class="form-group">
                 <label for="apMaterno">Apellido Materno</label>
-                <input type="text" class="form-control" id="apMaterno" placeholder="Ingrese su apellido materno"
-                    required>
+                <input type="text" class="form-control" id="apMaterno" placeholder="Ingrese su apellido materno" required>
             </div>
             <div class="form-group">
                 <label for="edad">Edad</label>
@@ -49,13 +120,11 @@
             </div>
             <div class="form-group">
                 <label for="correo">Correo Electrónico</label>
-                <input type="email" class="form-control" id="correo" placeholder="Ingrese su correo electrónico"
-                    required>
+                <input type="email" class="form-control" id="correo" placeholder="Ingrese su correo electrónico" required>
             </div>
             <div class="form-group">
                 <label for="contrasena">Contraseña</label>
-                <input type="password" class="form-control" id="contrasena" placeholder="Ingrese su contraseña"
-                    required>
+                <input type="password" class="form-control" id="contrasena" placeholder="Ingrese su contraseña" required>
             </div>
             <button id="btnRegistrar" class="btn btn-primary btn-block">Registrarse</button>
         </form>
@@ -102,7 +171,7 @@
                         if (response.error) {
                             $.notify("Algo fallo: " + response.mensaje, "error");
                         } else {
-                            // window.location.href = 'http://localhost/loginusers.html';
+                            window.location.href = 'http://localhost/practicas/ExamenSemenDiario/loginusers.html';
                             console.log('Éxito:', response);
                             $.notify("Se creo el usuario con exito", "success");
                         }

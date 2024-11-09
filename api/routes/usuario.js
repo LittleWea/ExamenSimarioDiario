@@ -7,6 +7,18 @@ const connection = require('../resources/db');
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
+// Ruta para cerrar sesión
+router.post('/logout', (req, res) => {
+  // Eliminar la sesión del usuario
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ mensaje: 'Error al cerrar la sesión', error: { Error: true, error: err } });
+    }
+
+    // Si no hubo errores, redirigimos al usuario a la página de inicio de sesión
+    return res.status(200).json({ mensaje: 'Sesión cerrada exitosamente' });
+  });
+});
 
 // Ruta para crear un usuario
 router.post('/create', (req, res) => {
@@ -65,16 +77,45 @@ router.post('/login', (req, res) => {
   });
 });
 
+// Ruta para obtener la información de la sesión y mostrar el nombre del usuario
 router.post('/getSession', async (req, res) => {
-  console.log(req.session.user)
-  if (req.session.user) {
-    return res.status(201).json({
-      mensaje: 'Session ok',
-      data: { ok: true },
+  try {
+    if (!req.session.user) {
+      return res.status(401).json({ mensaje: 'No session', error: { Error: true } });
+    }
+
+    const rfc = req.session.user.rfc;
+
+    // Verifica que el RFC esté presente y correcto
+    console.log("RFC desde la sesión:", rfc);
+    if (!rfc) {
+      return res.status(400).json({ mensaje: 'RFC inválido', error: { Error: true } });
+    }
+
+    const query = 'SELECT Nombre FROM clientes WHERE RFC = ?';
+    connection.query(query, [rfc], (err, results) => {
+      if (err) {
+        console.error("Error en la consulta SQL:", err);
+        return res.status(500).json({ mensaje: 'Error al obtener los datos del usuario', error: { Error: true, error: err } });
+      }
+
+      console.log("Resultados de la consulta:", results);
+      if (results.length > 0) {
+        const nombreUsuario = results[0].Nombre;
+        console.log("Nombre de usuario:", nombreUsuario);
+        return res.status(200).json({
+          mensaje: 'Sesión activa',
+          data: { ok: true, Nombre: nombreUsuario },
+        });
+      } else {
+        return res.status(404).json({ mensaje: 'Usuario no encontrado', error: { Error: true } });
+      }
     });
-  } else {
-    return res.status(201).json({ mensaje: 'No session', error: { Error: true } });
+  } catch (err) {
+    console.error("Error en el servidor:", err);
+    return res.status(500).json({ mensaje: 'Error al obtener los datos del usuario', error: { Error: true } });
   }
 });
+
 
 module.exports = router;
