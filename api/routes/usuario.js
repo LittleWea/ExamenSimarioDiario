@@ -1,9 +1,9 @@
-// routes/users.js
+//Librerias a usar en el modulo
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
 const connection = require('../resources/db');
-
+//Funcion para encriptar contraseña
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
@@ -25,24 +25,30 @@ router.post('/create', (req, res) => {
   // Obtener los datos del cuerpo de la solicitud
   const { rfc, contrasena, nombre, apPaterno, apMaterno, edad, telefono, correo } = req.body;
 
+  //Encriptar contraseña
   const hashedPassword = hashPassword(contrasena);
-
-  const query = 'SELECT * FROM clientes WHERE RFC = ? '; // Asegúrate de que la tabla 'users' tenga la columna 'contrasena'
+  //Obtener clientes
+  const query = 'SELECT * FROM clientes WHERE RFC = ? ';
   connection.query(query, [rfc], (err, results) => {
     if (err) {
+      //Enviar error
       return res.status(201).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
     }
 
     if (results.length > 0) {
+      //Enviar error
       return res.status(201).json({ mensaje: 'El RFC ya está en uso', error: { Error: true } });
     }
 
+    //Insertar cliente
     const insertQuery = 'INSERT INTO clientes (RFC, Nombre, ApPaterno, ApMaterno, Edad, Telefono, Correo, Contrasena, FechaAlta) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'; // Asegúrate de que la tabla 'users' tenga la columna 'contrasena'
     connection.query(insertQuery, [rfc, nombre, apPaterno, apMaterno, edad, telefono, correo, hashedPassword, Date.now()], (err, results) => {
       if (err) {
+        //Enviar error
         return res.status(201).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
       }
 
+      //Enviar respuesta
       res.status(201).json({
         mensaje: 'Usuario creado exitosamente',
         data: { id: results.insertId, rfc, correo },
@@ -50,26 +56,28 @@ router.post('/create', (req, res) => {
     });
   });
 });
-
+//Ruta para iniciar sesion
 router.post('/login', (req, res) => {
   // Obtener los datos del cuerpo de la solicitud
   const { rfc, contrasena} = req.body;
-
+//Encriptar contraseña
   const hashedPassword = hashPassword(contrasena);
-
-  const query = 'SELECT * FROM clientes WHERE RFC = ? AND Contrasena = ?'; // Asegúrate de que la tabla 'users' tenga la columna 'contrasena'
+  //Obtener usuario
+  const query = 'SELECT * FROM clientes WHERE RFC = ? AND Contrasena = ?'; 
   connection.query(query, [rfc, hashedPassword], (err, results) => {
     if (err) {
+      //Enviar error
       return res.status(201).json({ mensaje: 'Error al crear el usuario', error: { Error: true, error: err } });
     }
 
     if (results.length <= 0) {
+      //Enviar error
       return res.status(201).json({ mensaje: 'No existe el RFC registrado', error: { Error: true} });
     }
 
+    //Crear sesion
     req.session.user = { rfc: rfc };
-
-    console.log(req.session.user)
+    //Enviar respuesta
     return res.status(201).json({
       mensaje: 'Usuario logeado exitosamente',
       data: { id: results.insertId, rfc, access_control: "si"},
@@ -87,19 +95,19 @@ router.post('/getSession', async (req, res) => {
     const rfc = req.session.user.rfc;
 
     // Verifica que el RFC esté presente y correcto
-    console.log("RFC desde la sesión:", rfc);
     if (!rfc) {
       return res.status(400).json({ mensaje: 'RFC inválido', error: { Error: true } });
     }
-
+    //Obtener cliente
     const query = 'SELECT Nombre FROM clientes WHERE RFC = ?';
     connection.query(query, [rfc], (err, results) => {
       if (err) {
         console.error("Error en la consulta SQL:", err);
+        //Enviar error
         return res.status(500).json({ mensaje: 'Error al obtener los datos del usuario', error: { Error: true, error: err } });
       }
 
-      console.log("Resultados de la consulta:", results);
+      //Enviar respuesta
       if (results.length > 0) {
         const nombreUsuario = results[0].Nombre;
         console.log("Nombre de usuario:", nombreUsuario);
@@ -108,10 +116,12 @@ router.post('/getSession', async (req, res) => {
           data: { ok: true, Nombre: nombreUsuario },
         });
       } else {
+        //Enviar error
         return res.status(404).json({ mensaje: 'Usuario no encontrado', error: { Error: true } });
       }
     });
   } catch (err) {
+    //Enviar error
     console.error("Error en el servidor:", err);
     return res.status(500).json({ mensaje: 'Error al obtener los datos del usuario', error: { Error: true } });
   }
